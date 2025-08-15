@@ -28,32 +28,24 @@ SLEEP = 0.25
 # /// COLLECT CANDLES ////////////////////////////////////////////////////
 # ///////////////////////////////////////////////////////////////////////
 
-def attempt_fetching_candles_as_df(symbol
-                                   , granularity
-                                   , date_f: dt.datetime
-                                   , date_t: dt.datetime
-                                   , api: OandaApi 
-                                   ):
-    ATTEMPTS_LIMIT = 3
-    attempts_made = 0
+def fetch_candles_df(symbol
+                    , granularity
+                    , date_f: dt.datetime
+                    , date_t: dt.datetime
+                    , api: OandaApi 
+                    ):
 
-    while attempts_made < ATTEMPTS_LIMIT:
-
-        candles_df = api.get_candles_df(
-            symbol = symbol,
-            granularity = granularity,
-            date_f = date_f,
-            date_t = date_t
-        )
-
-        if candles_df is not None:
-            break
-        attempts_made += 1
+    candles_df = api.get_candles_df(
+        symbol = symbol,
+        granularity = granularity,
+        date_f = date_f,
+        date_t = date_t
+    )
 
     if candles_df is not None and candles_df.empty == False:
         return candles_df
     else:
-        print(f'attempt_fetching_candles_as_df() got no candles after {ATTEMPTS_LIMIT} attemps.')
+        print(f'fetch_candles_df() got no candles.')
         return None
     
 
@@ -81,12 +73,12 @@ def collect_candles(symbol
         to_date = from_date + dt.timedelta(minutes=time_step)
         to_date = lad if to_date > lad else to_date
 
-        candles_df = attempt_fetching_candles_as_df(symbol
-                                                    , granularity
-                                                    , from_date
-                                                    , to_date
-                                                    , api
-                                                    )
+        candles_df = fetch_candles_df(symbol
+                                    , granularity
+                                    , from_date
+                                    , to_date
+                                    , api
+                                    )
 
         if candles_df is not None:
             candles_df_list.append(candles_df)
@@ -209,12 +201,13 @@ def delete_previous_file(filename):
 # ------------------------------------------------------------------------
 
 
-def get_hist_quotes(symbol_lst,
-                      granularity_lst,
-                      date_start,
-                      date_end,
-                      api
-                      ):
+def get_hist_quotes(
+    symbol_lst,
+    granularity_lst,
+    date_start,
+    date_end,
+    api
+):
 
     for symbol in symbol_lst:
 
@@ -224,13 +217,13 @@ def get_hist_quotes(symbol_lst,
             print(f'Granularity: {granularity}')
 
             ok = collect_and_save_candles(
-                                            symbol             = symbol, 
-                                            granularity        = granularity, 
-                                            date_start         = date_start, 
-                                            date_end           = date_end, 
-                                            api                = api,
-                                            print_to_console   = True
-                                            )
+                symbol             = symbol, 
+                granularity        = granularity, 
+                date_start         = date_start, 
+                date_end           = date_end, 
+                api                = api,
+                print_to_console   = True
+            )
 
             if ok:
                 min_to_complete = (time.time() - start_time)/60

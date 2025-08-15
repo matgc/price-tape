@@ -6,6 +6,7 @@ import datetime as dt
 import pandas as pd
 from dotenv import load_dotenv
 from pathlib import Path
+from tenacity import retry, wait_exponential, stop_after_attempt, retry_if_result
 
 
 LABEL_MAP = {  'Open'   : 'o'
@@ -73,6 +74,11 @@ class FxApi:
 # /// REQUESTS ///////////////////////////////////////////////////////////
 # ///////////////////////////////////////////////////////////////////////
 
+    @retry(
+        wait=wait_exponential(multiplier=1, min=1, max=10),
+        stop=stop_after_attempt(5),
+        retry=retry_if_result(lambda result: result[0] is False)
+    )
     def make_request(self
                      , url_sufix
                      , verb='get'
