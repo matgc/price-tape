@@ -60,14 +60,20 @@ def collect_candles(symbol
                     ):
     
     time_step = INCREMENTS[granularity]
+    today = dt.date.today()
+    yesterday = today - dt.timedelta(days=1)
+    last_allowed_date = f'{yesterday.strftime("%Y-%m-%d")}T00:00:00'
+    lad = parser.parse(last_allowed_date)
 
     final_date = parser.parse(date_end)
     from_date  = parser.parse(date_start)
 
     candles_df_list = []
 
-    while from_date < final_date:
+    while (from_date < final_date) and (from_date < lad):
         to_date = from_date + dt.timedelta(minutes=time_step)
+        to_date = lad if to_date > lad else to_date
+
         candles_df = attempt_fetching_candles_as_df(symbol
                                                     , granularity
                                                     , from_date
@@ -206,6 +212,7 @@ def get_hist_quotes(symbol_lst,
 
         print(f'Fetching data for {symbol}')
         for granularity in granularity_lst:
+            start_time = time.time()
             print(f'Granularity: {granularity}')
 
             ok = collect_and_save_candles(
@@ -218,7 +225,8 @@ def get_hist_quotes(symbol_lst,
                                             )
 
             if ok:
-                print(f'Quotes saved for {symbol}_{granularity}')
+                min_to_complete = (time.time() - start_time)/60
+                print(f'Quotes saved for {symbol}_{granularity}, took {min_to_complete:.0f} minutes.')
             else:
                 print(f'Error on {symbol}_{granularity}')
 
