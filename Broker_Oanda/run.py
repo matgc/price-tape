@@ -6,7 +6,7 @@ if __name__ == '__main__':
     api = OandaApi()
 
     symbol_lst      = ['EUR_USD']           
-    granularity_lst = ['H2']
+    granularity_lst = ['H1']
     date_start      = '2025-03-25T00:00:00'
     date_end        = '2025-03-29T00:00:00'
 
