@@ -223,3 +223,94 @@ class FxApi:
             df_merged = df_merged[:-1]  
 
         return df_merged
+        
+
+# /// INTRUMENTS /////////////////////////////////////////////////////////
+# ------------------------------------------------------------------------
+
+    def filter_instruments(
+            self,
+            chosen_ids=[
+                'Forex',
+                'Crypto',
+                'CFD 00-01',
+                'US Stocks'
+            ]
+    ):
+
+        self.get_tradables_dict()
+
+        filtered_inst_set = set()
+        for key in self.tradables_dict.keys():
+            if self.tradables_dict[key]['StatusGroupId'] in chosen_ids:
+                filtered_inst_set.add(key)
+        self.filtered_inst_lst = list(filtered_inst_set)
+
+        with open(Path(__file__).parent / 'hist_quotes/filtered_inst.json', 'w') as f:
+            json.dump(self.filtered_inst_lst, f, indent=4)
+
+
+    def get_tradables_dict(self):
+
+        INST_KEYS =['Symbol',
+                    'ContractSize',
+                    'MarginHedged',
+                    'MarginFactor',
+                    'Description', 
+                    'StatusGroupId', 
+                    'Precision',
+                    'MinTradeAmount',
+                    'MaxTradeAmount',                  
+                    'TradeAmountStep',
+                    'CommissionType',
+                    'CommissionChargeType',
+                    'Commission',
+                    'DefaultSlippage',
+                    'SlippageType'
+                    ]
+        
+        self.get_tradables()
+        if self.tradables is not None:
+            self.tradables_dict = {}
+            for instrument in self.tradables:
+                key = instrument['Symbol']
+                self.tradables_dict[key] = {k: instrument[k] for k in INST_KEYS}
+        else:
+            raise ValueError('Unable to fetch instruments from broker')
+        
+        hist_folder = Path(__file__).parent / 'hist_quotes'
+        if not os.path.exists(hist_folder):
+            os.makedirs(hist_folder)
+
+        with open(hist_folder / 'tradables_dict.json', "w") as f:
+            f.write(json.dumps(self.tradables_dict, indent=4))
+
+
+    def get_tradables(self):
+        self.get_all_instruments()
+        self.get_instruments_with_hist()
+        self.filter_tradables()
+
+
+    def get_all_instruments(self):
+        url_sufix = f"symbol"
+        _, self.all_inst = self.make_request(url_sufix)
+
+
+    def get_instruments_with_hist(self): # inst with hist quotes available
+        url_sufix = f"quotehistory/symbols"
+        _, self.hist_inst = self.make_request(url_sufix)
+
+
+    def filter_tradables(self):
+        try:
+            self.std_inst   = [x for x in self.all_inst if not x['Symbol'][-2:]=='_L']
+            self.tradables  = [x for x in self.std_inst if x['Symbol'] in self.hist_inst]
+        except:
+            self.std_inst   = None
+            self.tradables  = None
+    
+
+    def get_periodicities(self, instrument):
+        url_sufix = f'quotehistory/{instrument}/periodicities'
+        _, periodicities = self.make_request(url_sufix, save_filename='periodicities')
