@@ -246,7 +246,7 @@ class FxApi:
                 filtered_inst_set.add(key)
         self.filtered_inst_lst = list(filtered_inst_set)
 
-        with open(Path(__file__).parent / 'hist_quotes/filtered_inst.json', 'w') as f:
+        with open(Path(__file__).parent / 'hist_quotes/filtered_inst_lst.json', 'w') as f:
             json.dump(self.filtered_inst_lst, f, indent=4)
 
 
@@ -293,7 +293,7 @@ class FxApi:
 
 
     def get_all_instruments(self):
-        url_sufix = f"symbol"
+        url_sufix = "symbol"
         _, self.all_inst = self.make_request(url_sufix)
 
 
@@ -313,4 +313,4 @@ class FxApi:
 
     def get_periodicities(self, instrument):
         url_sufix = f'quotehistory/{instrument}/periodicities'
-        _, periodicities = self.make_request(url_sufix, save_filename='periodicities')
+        _, periodicities = self.make_request(url_sufix)
