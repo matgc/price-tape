@@ -246,7 +246,7 @@ class FxApi:
                 filtered_inst_set.add(key)
         self.filtered_inst_lst = list(filtered_inst_set)
 
-        with open(Path(__file__).parent / 'hist_quotes/filtered_inst_lst.json', 'w') as f:
+        with open(Path(__file__).parent / 'hist_quotes/refs/filtered_inst_lst.json', 'w') as f:
             json.dump(self.filtered_inst_lst, f, indent=4)
 
 
@@ -279,11 +279,14 @@ class FxApi:
             raise ValueError('Unable to fetch instruments from broker')
         
         hist_folder = Path(__file__).parent / 'hist_quotes'
+        refs_folder = hist_folder / 'refs'
         if not os.path.exists(hist_folder):
             os.makedirs(hist_folder)
+        if not os.path.exists(refs_folder):
+            os.makedirs(refs_folder)
 
-        with open(hist_folder / 'tradables_dict.json', "w") as f:
-            f.write(json.dumps(self.tradables_dict, indent=4))
+        with open(refs_folder / 'tradables_dict.json', "w") as f:
+            json.dump(self.tradables_dict, f, indent=4)
 
 
     def get_tradables(self):
