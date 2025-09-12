@@ -78,17 +78,17 @@ if __name__ == '__main__':
                 candles = 0
             has_candles[symbol][gran] = candles >= expected_candles[gran]
 
-    able_inst_lst = []
+    back_able_inst_lst = []
     for symbol in symbol_lst:
         data_complete = True
         for gran in granularity_lst:
             if not has_candles[symbol][gran]:
                 data_complete = False
         if data_complete:
-            able_inst_lst.append(symbol)
+            back_able_inst_lst.append(symbol)
 
     with open(REFS/'has_candles.json', 'w') as f:
         json.dump(has_candles, f, indent=4)
 
-    with open(REFS/'able_inst_lst.json', 'w') as f:
-        json.dump(able_inst_lst, f, indent=4)
+    with open(REFS/'back_able_inst_lst.json', 'w') as f:
+        json.dump(back_able_inst_lst, f, indent=4)
